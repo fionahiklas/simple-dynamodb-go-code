@@ -6,50 +6,37 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/fionahiklas/simple-dynamodb-go-code/pkg/dynamofactory"
+	"github.com/sirupsen/logrus"
+
+	"github.com/fionahiklas/simple-dynamodb-go-code/internal/config"
 )
 
-// main Simple code to try and load AWS config settings by to see if the region
-// will get set and then whether this can be used to detect a local profile
+// main Simple code to try and connect to dynamo
 func main() {
-	fmt.Printf("Reading default AWS config ...\n")
-	awsConfig, err := config.LoadDefaultConfig(context.Background())
+	fmt.Printf("Reading config ...\n")
+	parsedConfig, err := config.ParseConfig()
 	if err != nil {
-		fmt.Printf("Failed to load default AWS config: %s\n", err)
+		fmt.Printf("Failed to return config error: %s\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("AWS Config read\n")
-	fmt.Printf("Region: %s\n", awsConfig.Region)
-
-	credentials, err := awsConfig.Credentials.Retrieve(context.Background())
+	dynamoFactory := dynamofactory.NewFactory(logrus.New(), parsedConfig, http.DefaultClient)
+	dynamoClient, err := dynamoFactory.CreateDynamoClient()
 	if err != nil {
-		fmt.Printf("Failed to get credentials: %s\n", err)
+		fmt.Printf("Failed to create client: %s\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Credentials: AccessKeyID: %s, SecretAccessKey: %s\n",
-		credentials.AccessKeyID, credentials.SecretAccessKey)
-	awsConfig.EndpointResolverWithOptions = newEndpointResolver()
-	awsConfig.HTTPClient = NewHttpClient(http.DefaultClient)
-
-	dynamoClient := dynamodb.NewFromConfig(awsConfig)
-
-	describeTableName := os.Getenv("DESCRIBE_TABLE_NAME")
-	if describeTableName == "" {
-		fmt.Printf("No table name provided to describe\n")
-		os.Exit(1)
-	}
-
+	tableToDescribe := parsedConfig.DynamoTableToDescribe()
 	describeTableArgs := dynamodb.DescribeTableInput{
-		TableName: &describeTableName,
+		TableName: &tableToDescribe,
 	}
 
 	describeTableResult, err := dynamoClient.DescribeTable(context.Background(), &describeTableArgs)
 	if err != nil {
-		fmt.Printf("Failed to describe table name: %s, error: %s\n", describeTableName, err)
+		fmt.Printf("Failed to describe table name: %s, error: %s\n", tableToDescribe, err)
 		os.Exit(1)
 	}
 
@@ -61,32 +48,4 @@ func main() {
 	fmt.Printf("Describe table keyschema size: %d\n", len(describeTableResult.Table.KeySchema))
 
 	os.Exit(0)
-}
-
-type endpointResolver struct{}
-
-func newEndpointResolver() *endpointResolver {
-	return &endpointResolver{}
-}
-
-func (*endpointResolver) ResolveEndpoint(service, region string, options ...interface{}) (aws.Endpoint, error) {
-	fmt.Printf("Endpoint resolver called: Region: %s, Service: %s\n", region, service)
-	return aws.Endpoint{
-		URL: "http://localhost:7001",
-	}, nil
-}
-
-type httpClient struct {
-	nextClient *http.Client
-}
-
-func NewHttpClient(nextClient *http.Client) *httpClient {
-	return &httpClient{
-		nextClient: nextClient,
-	}
-}
-
-func (hc *httpClient) Do(request *http.Request) (*http.Response, error) {
-	fmt.Printf("Request URL: %s\n", request.URL.String())
-	return hc.nextClient.Do(request)
 }

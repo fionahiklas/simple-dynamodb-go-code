@@ -5,8 +5,9 @@ import (
 )
 
 type dynamoConfig struct {
-	LocalEndpointURL  string `env:"LOCAL_DYNAMO_ENDPOINT_URL" envDefault:"http://localhost:7001"`
-	LocalDynamoRegion string `env:"LOCAL_DYNAMO_REGION" envDefault:"local-dynamodb"`
+	LocalEndpointURL   string `env:"LOCAL_DYNAMO_ENDPOINT_URL" envDefault:"http://localhost:7001"`
+	LocalDynamoRegion  string `env:"LOCAL_DYNAMO_REGION" envDefault:"local-dynamodb"`
+	DynamoTableToQuery string `env:"DESCRIBE_TABLE_NAME" envDefault:"default-table"`
 }
 
 type loggingConfig struct {
@@ -42,4 +43,8 @@ func (c *config) LocalEndpointUrl() string {
 
 func (c *config) LocalDynamoRegion() string {
 	return c.DynamoConfig.LocalDynamoRegion
+}
+
+func (c *config) DynamoTableToDescribe() string {
+	return c.DynamoConfig.DynamoTableToQuery
 }

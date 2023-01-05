@@ -53,7 +53,9 @@ func (f *factory) EndpointResolverWithFallbackFunction() aws.EndpointResolverWit
 
 func (f *factory) CreateDynamoClient() (*dynamodb.Client, error) {
 	awsConfig, err := awsconfig.LoadDefaultConfig(context.Background(),
-		awsconfig.WithHTTPClient(f.httpClient))
+		awsconfig.WithHTTPClient(f.httpClient),
+		awsconfig.WithEndpointResolverWithOptions(f.EndpointResolverWithFallbackFunction()))
+
 	if err != nil {
 		f.log.Errorf("Failed to read AWS config, %s", err)
 		return nil, err

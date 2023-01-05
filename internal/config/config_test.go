@@ -19,6 +19,7 @@ func TestConfig(t *testing.T) {
 		// The elephants in the 3rd Madagascar films
 		testLocalEndpointUrl  = "http://maya.manu:7001"
 		testLocalDynamoRegion = "madagascar"
+		testDescribeTable     = "julien"
 	)
 
 	envVars := map[string]string{
@@ -26,6 +27,7 @@ func TestConfig(t *testing.T) {
 		"LOCAL_DYNAMO_REGION":       testLocalDynamoRegion,
 		"LOG_LEVEL":                 testLogLevel,
 		"ENABLE_JSON_LOG_FORMAT":    strconv.FormatBool(testEnableJsonLogFormat),
+		"DESCRIBE_TABLE_NAME":       testDescribeTable,
 	}
 
 	clearEnvironment := func() {
@@ -61,6 +63,7 @@ func TestConfig(t *testing.T) {
 		require.Equal(t, testEnableJsonLogFormat, config.EnableJsonLogFormat())
 		require.Equal(t, testLocalEndpointUrl, config.LocalEndpointUrl())
 		require.Equal(t, testLocalDynamoRegion, config.LocalDynamoRegion())
+		require.Equal(t, testDescribeTable, config.DynamoTableToDescribe())
 	})
 
 }
