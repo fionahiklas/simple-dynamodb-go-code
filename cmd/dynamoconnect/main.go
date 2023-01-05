@@ -32,7 +32,7 @@ func main() {
 
 	fmt.Printf("Credentials: AccessKeyID: %s, SecretAccessKey: %s\n",
 		credentials.AccessKeyID, credentials.SecretAccessKey)
-	//awsConfig.EndpointResolverWithOptions = newEndpointResolver()
+	awsConfig.EndpointResolverWithOptions = newEndpointResolver()
 	awsConfig.HTTPClient = NewHttpClient(http.DefaultClient)
 
 	dynamoClient := dynamodb.NewFromConfig(awsConfig)
