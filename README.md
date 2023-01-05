@@ -4,6 +4,7 @@
 
 Code to try out accessing DynamoDB from Go
 
+![Main build](https://github.com/fionahiklas/simple-dynamodb-go-code/actions/workflows/test.yaml/badge.svg?branch=main)
 
 ## Quickstart
 
