@@ -43,10 +43,20 @@ func (f *factory) EndpointResolverWithFallbackFunction() aws.EndpointResolverWit
 			service, region)
 
 		if service == dynamodb.ServiceID && region == f.config.LocalDynamoRegion() {
+			localUrl := f.config.LocalEndpointUrl()
+			f.log.Debugf("Returning local endpoint: %s", localUrl)
 			return aws.Endpoint{
-				URL: f.config.LocalEndpointUrl(),
+				// TODO: Should this be hardcoded? The code is copied from this example
+				// TODO: https://aws.github.io/aws-sdk-go-v2/docs/configuring-sdk/endpoints/
+				PartitionID: "aws",
+				URL:         localUrl,
+				// The signing region must absolutely be set otherwise it won't work properly
+				// On local requests if this is missing they fail with a 400 error saying the
+				// table doesn't exist
+				SigningRegion: region,
 			}, nil
 		}
+		f.log.Debugf("Returning empty endpoint and error to trigger fallback")
 		return aws.Endpoint{}, &aws.EndpointNotFoundError{}
 	}
 }

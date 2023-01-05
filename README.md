@@ -68,4 +68,6 @@ aws dynamodb list-tables --endpoint-url http://localhost:7001
 
 * Post about the question [Is there a way to specify endpoint-url in AWS config](https://stackoverflow.com/questions/52494196/is-there-any-way-to-specify-endpoint-url-in-aws-cli-config-file)
 * Open [issue about allowing endpoint config](https://github.com/aws/aws-cli/issues/1270)
+* Using the [endpoint resolver](https://davidagood.com/dynamodb-local-go/)
 * Using [endpoint resolver with fallback](https://aws.github.io/aws-sdk-go-v2/docs/configuring-sdk/endpoints/)
+* [Using custom HTTP client](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/custom-http.html)

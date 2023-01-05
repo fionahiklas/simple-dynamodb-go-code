@@ -122,6 +122,7 @@ func TestNewFactory(t *testing.T) {
 			)
 			resetTest(t)
 			mockLogger.EXPECT().Debugf(gomock.Any(), service, region)
+			mockLogger.EXPECT().Debugf(gomock.Any())
 
 			factory := dynamofactory.NewFactory(mockLogger, mockConfig, mockHttpClient)
 			endpointResolverFunction := factory.EndpointResolverWithFallbackFunction()
@@ -134,6 +135,7 @@ func TestNewFactory(t *testing.T) {
 		t.Run("dynamodb service for local region returns URL", func(t *testing.T) {
 			resetTest(t)
 			mockLogger.EXPECT().Debugf(gomock.Any(), dynamodb.ServiceID, testRegion)
+			mockLogger.EXPECT().Debugf(gomock.Any(), testEndpointURL)
 			mockConfig.EXPECT().LocalDynamoRegion().Return(testRegion)
 			mockConfig.EXPECT().LocalEndpointUrl().Return(testEndpointURL)
 
@@ -142,6 +144,8 @@ func TestNewFactory(t *testing.T) {
 
 			endpointResult, err := endpointResolverFunction(dynamodb.ServiceID, testRegion)
 			require.Equal(t, testEndpointURL, endpointResult.URL)
+			require.Equal(t, testRegion, endpointResult.SigningRegion)
+			require.Equal(t, "aws", endpointResult.PartitionID)
 			require.NoError(t, err)
 		})
 	})
@@ -150,6 +154,7 @@ func TestNewFactory(t *testing.T) {
 		resetTest(t)
 
 		mockLogger.EXPECT().Debugf(gomock.Any(), dynamodb.ServiceID, testRegion)
+		mockLogger.EXPECT().Debugf(gomock.Any(), testEndpointURL)
 		mockConfig.EXPECT().LocalDynamoRegion().Return(testRegion)
 		mockConfig.EXPECT().LocalEndpointUrl().Return(testEndpointURL)
 

@@ -22,7 +22,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	dynamoFactory := dynamofactory.NewFactory(logrus.New(), parsedConfig, http.DefaultClient)
+	logger := logrus.New()
+	logger.SetLevel(logrus.DebugLevel)
+
+	dynamoFactory := dynamofactory.NewFactory(logger, parsedConfig, http.DefaultClient)
 	dynamoClient, err := dynamoFactory.CreateDynamoClient()
 	if err != nil {
 		fmt.Printf("Failed to create client: %s\n", err)
@@ -44,7 +47,20 @@ func main() {
 		fmt.Printf("Describe tables result is nil\n")
 		os.Exit(1)
 	}
-	fmt.Printf("Describe table ID: %s\n", *describeTableResult.Table.TableId)
+
+	if describeTableResult.Table.TableId != nil {
+		fmt.Printf("Describe table ID: %s\n", *describeTableResult.Table.TableId)
+	} else {
+		fmt.Printf("Describe table: There is no table ID\n")
+	}
+
+	if describeTableResult.Table.TableArn != nil {
+		fmt.Printf("Describe table ARN: %s\n", *describeTableResult.Table.TableArn)
+	} else {
+		fmt.Printf("Describe table: There is no table ARN\n")
+	}
+
+	fmt.Printf("Describe table name: %s\n", *describeTableResult.Table.TableName)
 	fmt.Printf("Describe table keyschema size: %d\n", len(describeTableResult.Table.KeySchema))
 
 	os.Exit(0)
