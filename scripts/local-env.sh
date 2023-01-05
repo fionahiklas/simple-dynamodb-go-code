@@ -1,6 +1,6 @@
 #!/bin/sh
 
-AWS_ACCESS_KEY_ID=12345
-AWS_SECRET_ACCESS_KEY=12345
-AWS_REGION=am-morpork
-AWS_DEFAULT_REGION=am-morpork
+# Do NOT set any AWS values here as these need to be picked up from
+# the awsume settings which dictate which AWS profile we're connecting to
+
+

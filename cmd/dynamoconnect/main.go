@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -31,22 +32,33 @@ func main() {
 
 	fmt.Printf("Credentials: AccessKeyID: %s, SecretAccessKey: %s\n",
 		credentials.AccessKeyID, credentials.SecretAccessKey)
-
-	awsConfig.EndpointResolverWithOptions = newEndpointResolver()
+	//awsConfig.EndpointResolverWithOptions = newEndpointResolver()
+	awsConfig.HTTPClient = NewHttpClient(http.DefaultClient)
 
 	dynamoClient := dynamodb.NewFromConfig(awsConfig)
 
-	listTablesResult, err := dynamoClient.ListTables(context.Background(), nil)
-	if err != nil {
-		fmt.Printf("Failed to list table names: %s\n", err)
+	describeTableName := os.Getenv("DESCRIBE_TABLE_NAME")
+	if describeTableName == "" {
+		fmt.Printf("No table name provided to describe\n")
 		os.Exit(1)
 	}
 
-	if listTablesResult == nil {
-		fmt.Printf("List tables result is nil\n")
+	describeTableArgs := dynamodb.DescribeTableInput{
+		TableName: &describeTableName,
+	}
+
+	describeTableResult, err := dynamoClient.DescribeTable(context.Background(), &describeTableArgs)
+	if err != nil {
+		fmt.Printf("Failed to describe table name: %s, error: %s\n", describeTableName, err)
 		os.Exit(1)
 	}
-	fmt.Printf("ListTables result size: %d\n", len(listTablesResult.TableNames))
+
+	if describeTableResult == nil {
+		fmt.Printf("Describe tables result is nil\n")
+		os.Exit(1)
+	}
+	fmt.Printf("Describe table ID: %s\n", *describeTableResult.Table.TableId)
+	fmt.Printf("Describe table keyschema size: %d\n", len(describeTableResult.Table.KeySchema))
 
 	os.Exit(0)
 }
@@ -62,4 +74,19 @@ func (*endpointResolver) ResolveEndpoint(service, region string, options ...inte
 	return aws.Endpoint{
 		URL: "http://localhost:7001",
 	}, nil
+}
+
+type httpClient struct {
+	nextClient *http.Client
+}
+
+func NewHttpClient(nextClient *http.Client) *httpClient {
+	return &httpClient{
+		nextClient: nextClient,
+	}
+}
+
+func (hc *httpClient) Do(request *http.Request) (*http.Response, error) {
+	fmt.Printf("Request URL: %s\n", request.URL.String())
+	return hc.nextClient.Do(request)
 }

@@ -90,10 +90,10 @@ build_something: ## Build the application using native target or from inside Doc
 
 
 run_loadawsconfig: APP_NAME=${APP_NAME_LOADAWSCONFIG}
-run_loadawsconfig: run_something ## Run the loadawsconfig application
+run_loadawsconfig: build_something run_something ## Run the loadawsconfig application
 
 run_dynamoconnect: APP_NAME=${APP_NAME_DYNAMOCONNECT}
-run_dynamoconnect: run_something ## Run the dynamoconnect application
+run_dynamoconnect: build_something run_something ## Run the dynamoconnect application
 
 run_something: ## Run the application that has been built locally
 	@echo "Running '${APP_NAME}' version '${CODE_VERSION}' locally on '${TARGETOS}/${TARGETARCH}'"
