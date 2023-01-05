@@ -1,6 +1,10 @@
 
 # Application names
 APP_NAME_LOADAWSCONFIG=loadawsconfig
+APP_NAME_DYNAMOCONNECT=dynamoconnect
+
+# Set to a default so that the tests will pass
+APP_NAME=defaultapp
 
 # Default to local target architecture if it's not being set by Docker
 # build which will be calling this Makefile
@@ -71,10 +75,26 @@ test: ## Run unit tests and check coverage
 	@echo "Running unit tests"
 	go test ${GO_LD_FLAGS} -coverprofile=coverage.out ./...
 
-build: ## Build the application using native target or from inside Docker
-	@echo "Building local '${APP_NAME_LOADAWSCONFIG}' for '${TARGETARCH}' on '${TARGETOS}'"
-	CGO_ENABLED=0 go build ${GO_LD_FLAGS} -o ${BUILD_PATH}/${APP_NAME_LOADAWSCONFIG}-${TARGETOS}-${TARGETARCH} ./cmd/${APP_NAME_LOADAWSCONFIG}
+# This might look a bit weird but it's a mechanism for setting env vars and then calling
+# a common target to achieve some build.  It means we don't keep repeating the same
+# build commands for multiple targets
+build_loadawsconfig: APP_NAME=${APP_NAME_LOADAWSCONFIG}
+build_loadawsconfig: build_something ## Build the loadawsconfig application
 
-run_loadawsconfig: build ## Run the application that has been built locally
-	@echo "Running '${APP_NAME_LOADAWSCONFIG}' version '${CODE_VERSION}' locally on '${TARGETOS}/${TARGETARCH}'"
-	( . ./scripts/local-env.sh ; ./build/${APP_NAME_LOADAWSCONFIG}-${TARGETOS}-${TARGETARCH} )
+build_dynamoconnect: APP_NAME=${APP_NAME_DYNAMOCONNECT}
+build_dynamoconnect: build_something ## Build the dynamoconnect application
+
+build_something: ## Build the application using native target or from inside Docker
+	@echo "Building local '${APP_NAME}' for '${TARGETARCH}' on '${TARGETOS}'"
+	CGO_ENABLED=0 go build ${GO_LD_FLAGS} -o ${BUILD_PATH}/${APP_NAME}-${TARGETOS}-${TARGETARCH} ./cmd/${APP_NAME}
+
+
+run_loadawsconfig: APP_NAME=${APP_NAME_LOADAWSCONFIG}
+run_loadawsconfig: run_something ## Run the loadawsconfig application
+
+run_dynamoconnect: APP_NAME=${APP_NAME_DYNAMOCONNECT}
+run_dynamoconnect: run_something ## Run the dynamoconnect application
+
+run_something: ## Run the application that has been built locally
+	@echo "Running '${APP_NAME}' version '${CODE_VERSION}' locally on '${TARGETOS}/${TARGETARCH}'"
+	( . ./scripts/local-env.sh ; ./build/${APP_NAME}-${TARGETOS}-${TARGETARCH} )

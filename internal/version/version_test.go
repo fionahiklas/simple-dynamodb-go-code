@@ -24,5 +24,5 @@ func TestVersion(t *testing.T) {
 	require.Greater(t, len(commitHash), 5)
 
 	appName := version.AppName()
-	require.Equal(t, "product-service", appName)
+	require.Equal(t, "defaultapp", appName)
 }
