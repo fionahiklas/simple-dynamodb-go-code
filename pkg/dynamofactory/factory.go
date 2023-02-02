@@ -29,6 +29,26 @@ type factory struct {
 	httpClient httpClient
 }
 
+// NewFactory creates a factory capable of creating multiple DynamoDB clients.
+// Each client can be re-used for multiple requests so this factory doesn't need
+// to be injected into any components.
+// NOTE: Is it VERY important that the HTTP client that is passed to the factory is
+// an AWS buildable client.  This can be created with the following code
+//
+//	import (
+//	   awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
+//	)
+//
+//	client := awshttp.NewBuildableClient()
+//
+// Under local circumstances connecting to either a LocalDynamoDB instance, or
+// even to AWS DynamoDB with an AWS profile, a Go HTTP client will work fine.
+// However, for k8s deployment, it seems like the HTTP client is used for multiple
+// requests to get the credentials (if using RBAC).
+// (From initial investigation it looks like the AWS SDK code queries EC2 metadata
+//
+//	endpoints and, from there, is able to retrieve some credentials to access
+//	AWS services)
 func NewFactory(log logger, config config, client httpClient) *factory {
 	return &factory{
 		log:        log,
